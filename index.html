@@ -278,6 +278,33 @@
       background: #dfb63c;
       color: #26255b;
       transform: scale(1.1);
+
+      /* Base Styles */
+#progress-panel {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 15px;
+  font-size: 1.2rem;
+  width: 200px;
+  z-index: 5;
+}
+
+@media screen and (max-width: 768px) {
+  #progress-panel {
+    position: static; 
+    margin: 10px auto;
+    width: 90%; 
+    text-align: center;
+  }
+
+  .question-area {
+    margin-top: 20px; 
+  }
+}
+
     }
   </style>
 </head>
