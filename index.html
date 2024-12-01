@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who Will Win the Million - Math Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('Who Wants to Be a Millionaire Set Design Gallery.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Logo Placement */
+    .game-container-logo {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .game-container-logo img {
+      max-width: 200px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Timer */
+    #timer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #26255b;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 1.8rem;
+      color: gold;
+      text-align: center;
+    }
+
+    /* Progression Panel */
+    #progress-panel {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      width: 200px;
+    }
+
+    .progress {
+      margin: 10px 0;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .progress.current {
+      font-weight: bold;
+      color: gold;
+    }
+
+    /* Question Area */
+    .container {
+      width: 90%;
+      max-width: 800px;
+      text-align: center;
+      margin-top: 220px; /* Slightly adjusted down for spacing */
+    }
+
+    .question-area {
+      background: #3e3c79;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 2px solid #dfb63c;
+    }
+
+    /* Lifelines */
+    .lifelines {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .lifeline {
+      background: #3e3c79;
+      border: 2px solid #dfb63c;
+      color: white;
+      padding: 10px 20px;
+      margin: 0 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .lifeline:hover {
+      background: #dfb63c;
+      color: #3e3c79;
+      transform: scale(1.1);
+    }
+
+    /* Answer Options */
+    .answer-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .answer {
+      background: #26255b;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid #dfb63c;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .answer.correct {
+      background-color: green !important;
+    }
+
+    .answer.wrong {
+      background-color: red !important;
+    }
+
+    .answer:hover {
+      background: #dfb63c;
+      color: #26255b;
+      transform: scale(1.05);
+    }
+
+    /* Endgame Messages */
+    .endgame {
+      display: none;
+      text-align: center;
+      font-size: 4rem;
+      font-weight: bold;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .endgame.losing {
+      color: red;
+      animation: shake 1.5s ease-in-out infinite;
+
+    }
+
+    .endgame.winning {
+      color: gold;
+      animation: glow 1.5s ease-in-out infinite;
+    }
+
+    /* Updated Animation for Losing */
+@keyframes losingPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Updated Animation for Winning */
+@keyframes winningGlow {
+  0% { text-shadow: 0 0 10px gold, 0 0 20px gold, 0 0 30px orange; opacity: 1; }
+  50% { text-shadow: 0 0 20px gold, 0 0 40px orange, 0 0 60px red; opacity: 0.9; }
+  100% { text-shadow: 0 0 10px gold, 0 0 20px orange, 0 0 30px red; opacity: 1; }
+}
+
+/* Apply the Animations */
+.endgame.losing {
+  color: red;
+  animation: losingPulse 1.5s infinite;
+  position: fixed; /* Position relative to the viewport */
+  top: 20%;        /* Center vertically */
+}
+
+.endgame.winning {
+  color: gold;
+  animation: winningGlow 2s infinite;
+  position: fixed; /* Position relative to the viewport */
+  top: 20%;        /* Center vertically */
+}
+
+/* Restart Button Glow Animation */
+@keyframes buttonGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px #dfb63c, 0 0 20px #dfb63c;
+  }
+  50% {
+    box-shadow: 0 0 15px #dfb63c, 0 0 30px #dfb63c;
+  }
+}
+
+/* Restart Button */
+.play-again {
+  display: none;
+  font-size: 1.5rem;
+  padding: 15px 30px;
+  background-color: #3e3c79;
+  color: white;
+  border: 3px solid #dfb63c;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  animation: buttonGlow 1.5s infinite; /* Subtle glowing effect */
+
+  /* Centering Styles */
+  position: fixed; /* Position relative to the viewport */
+  top: 50%;        /* Center vertically */
+  left: 50%;       /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for button dimensions */
+}
+
+.play-again:hover {
+  background-color: #dfb63c;
+  color: #26255b;
+}
+
+
+
+    /* Start Screen */
+    #start-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .game-logo {
+      max-width: 300px;
+      margin-bottom: 30px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    #start-button {
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      background: #3e3c79;
+      border: 3px solid #dfb63c;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #start-button:hover {
+      background: #dfb63c;
+      color: #26255b;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+
+ <audio id="opening-sound" src="opening.mp3"></audio>
+<audio id="during-sound" src="during.mp3" loop></audio>
+<audio id="winning-sound" src="winning.mp3"></audio>
+<audio id="losing-sound" src="losing.mp3"></audio>
+
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <img src="Screenshot_2024-11-30_at_5.40.41_PM-removebg-preview.png" alt="Game Logo" class="game-logo">
+    <button id="start-button">أبدئي اللعب</button>
+  </div>
+
+  <!-- Game Logo -->
+  <div class="game-container-logo" id="game-logo">
+    <img src="Screenshot_2024-11-30_at_5.40.41_PM-removebg-preview.png" alt="Game Logo">
+  </div>
+
+  <!-- Timer -->
+  <div id="timer">15</div>
+
+  <!-- Progress Panel -->
+  <div id="progress-panel">
+    <p class="progress"> السؤال الاول</p>
+    <p class="progress">السؤال الثاني </p>
+    <p class="progress">السؤال الثالث </p>
+    <p class="progress">السؤال الرابع </p>
+    <p class="progress">السؤال الخامس  </p>
+    <p class="progress">السؤال السادس </p>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Lifelines -->
+    <div class="lifelines">
+      <button class="lifeline" onclick="useLifeline('50/50')">٥٠/٥٠</button>
+      <button class="lifeline">اسأل الجمهور</button>
+      <button class="lifeline">اتصل بصديق</button>
+    </div>
+
+    <!-- Question Area -->
+    <div class="question-area">
+      <h1 id="question">يقل عن س بمقدار ٣</h1>
+    </div>
+
+    <!-- Answer Options -->
+    <div class="answer-options">
+      <button class="answer" id="answerA">٣ - س</button>
+      <button class="answer" id="answerB">س - ٣</button>
+      <button class="answer" id="answerC">س + ٣ </button>
+      <button class="answer" id="answerD">س / ٣</button>
+    </div>
+  </div>
+
+  <!-- Endgame Messages -->
+  <div class="endgame" id="endgame-message"></div>
+  <button class="play-again" id="play-again" onclick="restartGame()">ابدئي اللعب</button>
+
+  <script>
+const startScreen = document.getElementById('start-screen');
+const startButton = document.getElementById('start-button');
+const gameLogo = document.getElementById('game-logo');
+const questionEl = document.getElementById("question");
+const answers = document.querySelectorAll(".answer");
+const timerEl = document.getElementById("timer");
+const endgameMessage = document.getElementById("endgame-message");
+const playAgainButton = document.getElementById("play-again");
+const progressItems = document.querySelectorAll(".progress");
+
+// Get references to the audio elements
+const openingSound = document.getElementById('opening-sound');
+const duringSound = document.getElementById('during-sound');
+const winningSound = document.getElementById('winning-sound');
+const losingSound = document.getElementById('losing-sound');
+
+let currentQuestion = 0;
+let timerInterval;
+
+const questions = [
+  { question: "يقل عن س بمقدار ٣", options: ["٣ - س", "س + ٣", "س - ٣ ", "س ÷ ٣"], correct:2 },
+  { question: "تصدقت منى بأربعة أمثال ماتصدقت به مها من نقود، إذا كانت مها قد تصدقت بـ ٨ ريالات. فكم ريالاً تصدقت به منى؟", options: [" ٤× ٨ = ٣٢", "٨÷ ٤ = ٢", "٤ + ٨ = ١٢", "٨ - ٤ = ٤"], correct:0 },
+  { question: "اكملت زينب نصف حبات التمر، قاعدة الدالة لها", options: ["س + ٢", "س ÷٢ ", "س - ٢", "س × ٢"], correct:1},
+  { question: "أوجدي قيمة العبارة ١٢ - ٢ × ٥ ", options: ["٢", "٣", "١", "٤"], correct: 0},
+  { question: "اذا كانت أ= ٣، جـ = ٦ . فإن جـ ÷ أ ", options: ["١", "٣", "٢", "٤"], correct:2 },
+  { question: "اشترت رقية ٣ كتب ثمنها جميعا ١٥ ريالًا، إذا كان لكل كتاب الثمن نفسه، فاستعمل المعادلةَ ٣س = ١٥ لايجاد ثمن كل كتاب.", options: ["٧", "٥", "٣", "١١"], correct: 1 },
+];
+
+function startGame() {
+  // Stop the opening sound and show the game
+  openingSound.pause();
+  openingSound.currentTime = 0;
+  startScreen.style.display = 'none';
+
+  // Start the during sound and load the first question
+  duringSound.play();
+  loadQuestion();
+}
+
+function startTimer(duration) {
+  let timeLeft = duration;
+  timerEl.textContent = timeLeft;
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      duringSound.pause();
+      duringSound.currentTime = 0;
+      losingSound.play();
+      showEndgameMessage("إنتهى الوقت !! لقد خسرتي", "losing");
+    }
+  }, 1000);
+}
+
+function loadQuestion() {
+  const question = questions[currentQuestion];
+  startTimer(30); // Timer: 30s for Q4-Q6, 15s otherwise
+
+  questionEl.textContent = question.question;
+  answers.forEach((btn, index) => {
+    btn.textContent = question.options[index];
+    btn.classList.remove("correct", "wrong");
+    btn.disabled = false;
+    btn.onclick = () => handleAnswer(index, btn);
+  });
+
+  progressItems.forEach((item, index) => {
+    item.classList.toggle("current", index === currentQuestion);
+  });
+}
+
+function useLifeline(type) {
+  if (type === '50/50') {
+    const correctIndex = questions[currentQuestion].correct;
+    const incorrectIndexes = [0, 1, 2, 3].filter(index => index !== correctIndex);
+    incorrectIndexes.slice(0, 2).forEach(index => {
+      answers[index].textContent = '';
+      answers[index].disabled = true;
+    });
+  }
+}
+
+function handleAnswer(selected, btn) {
+  clearInterval(timerInterval);
+  const correct = selected === questions[currentQuestion].correct;
+
+  if (correct) {
+    btn.classList.add("correct");
+    setTimeout(() => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        duringSound.pause();
+        duringSound.currentTime = 0;
+        winningSound.play();
+        showEndgameMessage(" أحسنتي!! لقد ربحتي المفاجأة", "winning");
+        gameLogo.style.display = "none"; // Hide logo on win
+      }
+    }, 2000);
+  } else {
+    btn.classList.add("wrong");
+    duringSound.pause();
+    duringSound.currentTime = 0;
+    losingSound.play(); // Play losing sound immediately
+    setTimeout(() => {
+      showEndgameMessage("إجابتك خاطئة !! لقد خسرتي ", "losing");
+      gameLogo.style.display = "none"; // Hide logo on lose
+    }, 200);
+  }
+}
+
+function showEndgameMessage(message, type) {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("progress-panel").style.display = "none";
+  endgameMessage.style.display = "block";
+  endgameMessage.textContent = message;
+  endgameMessage.className = `endgame ${type}`;
+  playAgainButton.style.display = "block";
+}
+
+function restartGame() {
+  currentQuestion = 0;
+  endgameMessage.style.display = "none";
+  playAgainButton.style.display = "none";
+  document.querySelector(".container").style.display = "block";
+  document.getElementById("progress-panel").style.display = "block";
+  gameLogo.style.display = "block"; // Show logo again
+
+  // Reset sounds
+  winningSound.pause();
+  losingSound.pause();
+  winningSound.currentTime = 0;
+  losingSound.currentTime = 0;
+  duringSound.play();
+
+  loadQuestion();
+}
+
+// Ensure opening sound starts when the user interacts
+startButton.addEventListener('click', startGame);
+playAgainButton.addEventListener('click', restartGame);
+
+openingSound.play();
+
+  </script>
+</body>
+</html>
